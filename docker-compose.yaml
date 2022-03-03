@@ -1,0 +1,31 @@
+version: '3'
+services:
+
+  web:
+    container_name: ${site}
+    hostname: ${site}
+    #image: 'nated.io/party-web:latest'
+    ports:
+      - 8080:4545
+    volumes:
+      - party-web:/
+    networks:
+      - party
+  
+  redis:
+    container_name: ${redis}
+    hostname: ${redis}
+    #image: 'nated.io/party-redis:latest'
+    ports:
+      - 5432:5432
+    volumes:
+      - party-redis:/data
+    networks:
+      - party
+
+networks:
+  party:
+
+volumes:
+  party-web:
+  party-redis:
