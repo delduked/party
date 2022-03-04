@@ -9,8 +9,6 @@ services:
       dockerfile: party.dockerfile
     ports:
       - 8080:4545
-    volumes:
-      - party-web:/
     networks:
       - party
     environment:
@@ -19,5 +17,3 @@ services:
 networks:
   party:
 
-volumes:
-  party-web:
