@@ -3,6 +3,8 @@ package routes
 import (
 	"fmt"
 
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -43,6 +45,7 @@ func Home(c *fiber.Ctx) error {
 
 func Login(c *fiber.Ctx) error {
 	c.Accepts("application/json")
+	var secret = []byte(`asdf908hj90fdsah908dsafh009q340937109f14f09hsd980fasdf980ahsdf0(SD)F(&*HSDF)(&709SD)F*&$@)(@&#$#F@)H&`)
 
 	body := new(password)
 	if err := c.BodyParser(body); err != nil {
@@ -53,6 +56,28 @@ func Login(c *fiber.Ctx) error {
 	if err != nil {
 		return fiber.ErrUnauthorized
 	}
+
+	// Create the Claims
+	claims := jwt.MapClaims{
+		"exp": time.Now().Add(time.Hour * 1).Unix(),
+	}
+
+	// Create token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	t, err := token.SignedString(secret)
+	if err != nil {
+		return fiber.ErrUnauthorized
+	}
+
+	// Generate new cookie for the clients request
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = t
+
+	// Set the JWT inside the newly created cookie
+	c.Cookie(cookie)
 
 	c.Status(fiber.StatusOK)
 	return nil
