@@ -19,7 +19,7 @@ func main() {
 
 	party := app.Group("/", middleware.Log)
 	party.Get("/", routes.Home)
-	party.Get("/login", routes.Login)
+	party.Post("/login", routes.Login)
 	party.Static("/assets", "./assets")
 
 	app.Listen(":8080")

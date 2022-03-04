@@ -3,21 +3,37 @@ package routes
 import (
 	"fmt"
 
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-type password struct {
-	password string `json:"password"`
+type Password struct {
+	Password string `json:"Password"`
 }
 
-func checkPassword(body *password) error {
-	if body.password == "n4th4n43l" {
+var (
+	secret = []byte(`asdf908hj90fdsah908dsafh009q340937109f14f09hsd980fasdf980ahsdf0(SD)F(&*HSDF)(&709SD)F*&$@)(@&#$#F@)H&`)
+)
+
+func getPassword() (string, bool) {
+	importPassword, ok := os.LookupEnv("PASSWORD")
+	if !ok {
+		return "n4th4n43l", false
+	}
+	return importPassword, true
+
+}
+
+func checkPassword(body *Password) error {
+
+	environmentPassword, _ := getPassword()
+	if body.Password == environmentPassword {
 		return nil
 	}
-	if body.password != "n4th4n43l" {
+	if body.Password != environmentPassword {
 		return fmt.Errorf("incorrect secret")
 	}
 	return fmt.Errorf("System error")
@@ -26,28 +42,34 @@ func checkPassword(body *password) error {
 
 func Home(c *fiber.Ctx) error {
 	// Render index template
-
 	bearer := c.Cookies("token")
-	_, err := jwt.Parse(bearer, func(token *jwt.Token) (interface{}, error) {
-		//Make sure that the token method conform to "SigningMethodHMAC"
+	token, err := jwt.Parse(bearer, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fiber.ErrUnauthorized
-
+			fmt.Println("2")
+			return nil, fmt.Errorf("unexpected signing method")
 		}
-		return nil, nil
+		return secret, nil
 	})
 	if err != nil {
 		return c.Render("login", nil)
 	}
 
+	_, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.Render("login", nil)
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		return c.Render("login", nil)
+	}
 	return c.Render("info", nil)
 }
 
 func Login(c *fiber.Ctx) error {
 	c.Accepts("application/json")
-	var secret = []byte(`asdf908hj90fdsah908dsafh009q340937109f14f09hsd980fasdf980ahsdf0(SD)F(&*HSDF)(&709SD)F*&$@)(@&#$#F@)H&`)
 
-	body := new(password)
+	body := new(Password)
 	if err := c.BodyParser(body); err != nil {
 		return fiber.ErrBadRequest
 	}

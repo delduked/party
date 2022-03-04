@@ -5,9 +5,12 @@ $('#login').click(() => {
 });
 const login = async (password) => {
     try {
+        const body = {
+            Password: password
+        }
         const res = await fetch("/login", {
             method: 'POST',
-            body: JSON.stringify(password),
+            body: JSON.stringify(body),
             headers: { "content-type": "application/json" }
         });
         if (res.ok) {
